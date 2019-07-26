@@ -1,0 +1,93 @@
+workspace:
+  path: /github.com/elastos
+
+kind: pipeline
+name: elastos
+
+clone:
+  depth: 10
+
+platform:
+  os: linux
+  arch: amd64
+
+volumes:
+- name: root
+  host:
+    path: /data/jepsen
+
+steps:
+- name: make
+  image: golang:1.12
+  environment:
+    GOPATH: /drone
+  commands:
+  - git clone --depth 5 -b jepsen https://github.com/elastos/Elastos.ELA.git
+  - cd Elastos.ELA
+  - glide install
+  - make all
+  - make dns
+  - cp ela ela-cli ela-dns /root
+  - cp ela ela-cli ela-dns ../
+
+- name: running
+  image: peterwillcn/jepsen_docker_control
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - ./ela -v
+  - touch /root/.ssh/known_hosts
+  - echo 'StrictHostKeyChecking no' > ~/.ssh/config
+  - eval $(ssh-agent)
+  - ssh-add
+  - lein run test --strict-host-key-checking no \
+    --concurrency 6 -n n1 -n n2 -n n3 -n n4 -n n5 -n n6
+  when:
+    event:
+    - push
+    - pull_request
+
+services:
+- name: n1
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
+- name: n2
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
+- name: n3
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
+- name: n4
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
+- name: n5
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
+- name: n6
+  image: peterwillcn/jepsen_docker_work
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - /usr/sbin/sshd -D
