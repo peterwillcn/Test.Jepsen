@@ -9,7 +9,7 @@
             [jepsen.generator :as gen]
             [jepsen.tests :as tests]
             [jepsen.control.util :as cu]
-            [jepsen.os.debian :as debian]
+            [jepsen.os.ubuntu :as ubuntu]
             [slingshot.slingshot :refer [try+]]))
 
 (def dir "/opt/elastos")
@@ -33,16 +33,13 @@
              {:logfile logfile
               :pidfile pidfile
               :chdir   dir}
-             binary)
-            )
-           )
+             binary)))
 
    (teardown! [_ test node]
               (info node "tearing down ela")
               (cu/stop-daemon! binary pidfile)
               (c/su
-               (c/exec :rm :-rf dir))
-              )))
+               (c/exec :rm :-rf dir)))))
 
 
 (defn ela-test
@@ -52,7 +49,7 @@
   (merge tests/noop-test
          opts
          {:name "ela"
-          :os   debian/os
+          :os   ubuntu/os
           :db   (ela-node "v0.3.5")}))
 
 (defn -main
