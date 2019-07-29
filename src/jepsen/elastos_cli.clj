@@ -33,13 +33,21 @@
              {:logfile logfile
               :pidfile pidfile
               :chdir   dir}
-             binary)))
+             binary)
+
+            ; wait for node initializing
+            (Thread/sleep 10000)))
 
    (teardown! [_ test node]
               (info node "tearing down ela")
               (cu/stop-daemon! binary pidfile)
               (c/su
-               (c/exec :rm :-rf dir)))))
+               (c/exec :rm :-rf dir))
+              )
+
+   db/LogFiles
+   (log-files [_ test node]
+              [logfile])))
 
 
 (defn ela-test
