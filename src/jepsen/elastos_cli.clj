@@ -26,6 +26,7 @@
    (setup! [_ test node]
            (c/su
             (info node "installing ela" version)
+            ;todo replace http://172.16.0.120/ela.zip with real download address
             (let [url (str "http://172.16.0.120/ela.zip")]
               (cu/install-archive! url dir))
 
@@ -33,7 +34,11 @@
              {:logfile logfile
               :pidfile pidfile
               :chdir   dir}
-             binary)
+             binary
+             ; todo replace dns with real dns server
+             :-dns "http://172.16.0.120:20338"
+             ; todo set magic with rules
+             :-magic 2019007)
 
             ; wait for node initializing
             (Thread/sleep 10000)))
@@ -42,8 +47,7 @@
               (info node "tearing down ela")
               (cu/stop-daemon! binary pidfile)
               (c/su
-               (c/exec :rm :-rf dir))
-              )
+               (c/exec :rm :-rf dir)))
 
    db/LogFiles
    (log-files [_ test node]
