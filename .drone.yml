@@ -27,11 +27,10 @@ steps:
   - glide install
   - make all
   - make dns
-  - cp ela ela-cli ela-dns /root
   - cp ela ela-cli ela-dns ../
 
 - name: running
-  image: peterwillcn/jepsen_docker_control
+  image: peterwillcn/jepsen_control
   volumes:
   - name: root
     path: /root
@@ -50,42 +49,42 @@ steps:
 
 services:
 - name: n1
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
   commands:
   - /usr/sbin/sshd -D
 - name: n2
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
   commands:
   - /usr/sbin/sshd -D
 - name: n3
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
   commands:
   - /usr/sbin/sshd -D
 - name: n4
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
   commands:
   - /usr/sbin/sshd -D
 - name: n5
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
   commands:
   - /usr/sbin/sshd -D
 - name: n6
-  image: peterwillcn/jepsen_docker_work
+  image: peterwillcn/jepsen_work:ubuntu
   volumes:
   - name: root
     path: /root
