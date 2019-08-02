@@ -2,14 +2,10 @@ workspace:
   path: /github.com/elastos
 
 kind: pipeline
-name: elastos
+name: crc-test
 
 clone:
   depth: 10
-
-platform:
-  os: linux
-  arch: amd64
 
 volumes:
 - name: root
@@ -17,6 +13,16 @@ volumes:
     path: /data/jepsen
 
 steps:
+- name: worker
+  image: peterwillcn/drone-kubernetes:0.0.1
+  volumes:
+  - name: root
+    path: /root
+  commands:
+  - kubectl create -f k8s/crc-system.yml || true
+  - sleep 30
+  - /pods -ns crc-system
+
 - name: make
   image: golang:1.12
   environment:
@@ -30,63 +36,90 @@ steps:
   - cp ela ela-cli ela-dns ../
 
 - name: running
-  image: peterwillcn/jepsen_control
+  image: peterwillcn/jepsen_control:0.1.2
   volumes:
   - name: root
     path: /root
   commands:
   - ./ela -v
-  - touch /root/.ssh/known_hosts
-  - echo 'StrictHostKeyChecking no' > ~/.ssh/config
   - eval $(ssh-agent)
   - ssh-add
+  - cat /root/crc-system
+    # TODO: Clojure injection parameters from /root/{namespace}
   - lein run test --strict-host-key-checking no \
-    --concurrency 6 -n n1 -n n2 -n n3 -n n4 -n n5 -n n6
+    --concurrency 5 -n 192.168.3.16 -n 192.168.3.12 -n 192.168.3.15 -n 192.168.3.11 -n 192.168.3.14
   when:
     event:
     - push
     - pull_request
 
-services:
-- name: n1
-  image: peterwillcn/jepsen_work:ubuntu
+- name: teardown
+  image: peterwillcn/drone-kubernetes:0.0.1
   volumes:
   - name: root
     path: /root
   commands:
-  - /usr/sbin/sshd -D
-- name: n2
-  image: peterwillcn/jepsen_work:ubuntu
+  - kubectl delete -f k8s/crc-system.yml || true
+---
+workspace:
+  path: /github.com/elastos
+
+kind: pipeline
+name: database-test
+
+clone:
+  depth: 10
+
+volumes:
+- name: root
+  host:
+    path: /data/jepsen
+
+steps:
+- name: worker
+  image: peterwillcn/drone-kubernetes:0.0.1
   volumes:
   - name: root
     path: /root
   commands:
-  - /usr/sbin/sshd -D
-- name: n3
-  image: peterwillcn/jepsen_work:ubuntu
+  - kubectl create -f k8s/database-system.yml || true
+  - sleep 120
+  - /pods -ns database-system
+
+- name: make
+  image: golang:1.12
+  environment:
+    GOPATH: /drone
+  commands:
+  - git clone --depth 5 -b jepsen https://github.com/elastos/Elastos.ELA.git
+  - cd Elastos.ELA
+  - glide install
+  - make all
+  - make dns
+  - cp ela ela-cli ela-dns ../
+
+- name: running
+  image: peterwillcn/jepsen_control:0.1.2
   volumes:
   - name: root
     path: /root
   commands:
-  - /usr/sbin/sshd -D
-- name: n4
-  image: peterwillcn/jepsen_work:ubuntu
+  - ./ela -v
+  - eval $(ssh-agent)
+  - ssh-add
+  - cat /root/database-system
+    # TODO: Clojure injection parameters from /root/{namespace}
+  - lein run test --strict-host-key-checking no \
+    --concurrency 5 -n 192.168.3.16 -n 192.168.3.12 -n 192.168.3.15 -n 192.168.3.11 -n 192.168.3.14
+  when:
+    event:
+    - push
+    - pull_request
+
+- name: teardown
+  image: peterwillcn/drone-kubernetes:0.0.1
   volumes:
   - name: root
     path: /root
   commands:
-  - /usr/sbin/sshd -D
-- name: n5
-  image: peterwillcn/jepsen_work:ubuntu
-  volumes:
-  - name: root
-    path: /root
-  commands:
-  - /usr/sbin/sshd -D
-- name: n6
-  image: peterwillcn/jepsen_work:ubuntu
-  volumes:
-  - name: root
-    path: /root
-  commands:
-  - /usr/sbin/sshd -D
+  - kubectl delete -f k8s/database-system.yml || true
