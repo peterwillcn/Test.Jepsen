@@ -36,12 +36,14 @@ steps:
   - cp ela ela-cli ela-dns ../
 
 - name: running
-  image: peterwillcn/jepsen_control:0.1.2
+  image: peterwillcn/jepsen_control:0.1.1
   volumes:
   - name: root
     path: /root
   commands:
   - ./ela -v
+  - zip ela.zip ela ela-cli config.json
+  - scp ela.zip root@172.16.0.120:/data/static
   - eval $(ssh-agent)
   - ssh-add
   - cat /root/crc-system

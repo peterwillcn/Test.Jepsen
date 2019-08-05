@@ -1,0 +1,23 @@
+{
+	"Configuration": {
+		"Magic": 123,
+		"PowConfiguration": {
+			"PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+			"MinerInfo": "ELA",
+			"MinTxFee": 100
+		},
+		"EnableRPC": true,
+		"ProfilePort": 22332,
+		"HttpRestPort": 20334,
+		"HttpRestStart": true,
+		"PrintLevel": 0,
+		"RpcConfiguration": {
+			"User": "",
+			"Pass": "",
+			"WhiteIPList": [
+				"127.0.0.1"
+			]
+		},
+		"EnableHistory": true
+	}
+}
