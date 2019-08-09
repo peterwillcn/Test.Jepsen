@@ -13,9 +13,10 @@
             [slingshot.slingshot :refer [try+]]))
 
 (def dir "/opt/elastos")
+(def logdir "/root")
 (def binary "ela")
 (def cli-binary "ela-cli")
-(def logfile (str dir "/ela.log"))
+(def logfile (str logdir "/ela.log"))
 (def pidfile (str dir "/ela.pid"))
 
 (defn ela-node
